@@ -51,3 +51,4 @@ jobs:
         gradient deployments get --id $(cat ./deployment.id)|jq '.deploymentSpecs[0].endpointUrl' -r
 
       image: paperspace/gradient-sdk
+      
